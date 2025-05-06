@@ -1,50 +1,93 @@
 const mysql = require("../mysql");
+const bcrypt = require("bcrypt");
+const jwt = require ("jsonwebtoken");
 
 exports.atualizarUsuario = async (req, res) => {
-    try{
-       const idUsuario = Number(req.params.id); 
-       const resultado = await mysql.execute(
-         `update users
-             set name = ?,
-               email = ?,
-               password = ?
-             where id = ?;`,
-          [
-            req.body.name,
-            req.body.email, 
+    try {
+        const idUsuario = Number(req.params.id);
+        const resultado = await mysql.execute(
+            `   UPDATE users
+                   SET name 	= ?,
+                       email 	= ?,
+                       password = ?
+                 where id = ?;`,
+            [req.body.name,
+            req.body.email,
             req.body.password,
-            idUsuario
-          ]
-       );
+                idUsuario]
+        );
 
-       return res.status(201).send({"Mensagem": "Usuario atualizado com sucesso",
-       "Resultado": Resultado
-       });
+        return res.status(200).send({
+            "Mensagem": "Usuario atualizado com sucesso!",
+            "Resultado": resultado
+        });
 
-    }catch (error) {
-      return res.status(500).send({"Mensagem": error});
+    } catch (error) {
+        return res.status(500).send({ "Mensagem": error });
+
     }
 }
 
 exports.cadastrarUsuario = async (req, res) => {
-    try{
+    try {
+      const hash = await bcrypt.hash(req.body.password, 10);
         const resultado = await mysql.execute(
-          `insert into users (name,email,password)
-            values (
-               name = ?,
-               email = ?,
-               password = ?)`
-            [
-             req.body.name,
-             req.body.email,
-             req.body.password
-            ]
-        );
+        `INSERT INTO users (
+            first_name,
+            last_name,
+            email,
+            password,
+            birth_date,
+            phone
+          )
+            values (?, ?, ?, ?, ?, ?);`,[
+              req.body.first_name, 
+              req.body.last_name,
+              req.body.email, 
+              req.body.password,
+              req.body.birth_date,
+              req.body.phone
+            ]);
 
-        return res.status(201).send ({"mensagem": "usuario cadastrado com sucesso",
-            "resultado": resultado
+        return res.status(200).send({
+            "Mensagem": "Usuario Cadastrado com Sucesso",
+            "Resultado": resultado
         });
-    }catch (error) {
-        return res.status(500).send({"Mensagem": error});
+
+    } catch (error) {
+        return res.status(500).send({ "Mensagem": error });
+
     }
+}
+
+exports.login = async () => {
+  try {
+       const usuario = await mysql.execute(
+        `SELECT * FROM users WHERE email = ?`,
+        [req.body.email]);
+
+        if (usuario.length == 0) {
+          return res.status(401).send({"Mensagem": "Usuario não cadastrado"});
+        }
+        
+        const match = await bcrypt.compare(usuario[0].password, req.body.password);
+        if (!match) {
+          return res.status(401).send({"Mensagem": "Senha incorreta!"})
+        }
+
+        const token = jwt.sign({
+          id: usuario[0].id,
+          first_name: usuario[0].first_name,
+          last_name: usuario[0].last_name,
+          email: usuario[0].email,
+          birth_date: usuario[0].birth_date,
+        }, "senhadojwt");
+        return res.status(200).send({
+          "Mensagem": "Usuario não autenticado com sucesso",
+          "token": token
+        }); 
+
+  }catch (error) {
+     return res.status(500).send({"Error": error})
+  }
 }

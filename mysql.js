@@ -1,22 +1,21 @@
-const mysql2 = require('mysql2');
+const mysql2 = require('mysql2')
 
 const connection = mysql2.createConnection({
-    host: "localhost",
-    user: "root",
-    passaword:"root",
-    port: 3307,
-    database: "hopihari_dbx"
+    host: 'localhost',
+    user: 'root', 
+    password: 'root',
+    port: 3306,
+    database: 'hopi_hari_db'
 });
 
-exports.execute = (query, params = [], pool = pool) => {
+exports.execute = (query, params = [], pool = connection) => {
     return new Promise((resolve, reject) => {
-        pool.query(query, params, (eror, results)=> {
+        pool.query(query, params, (error, results) => {
             if (error) {
-             reject (error);
+                reject(error);
             } else {
                 resolve(results);
             }
-
         });
     });
-}
+};
