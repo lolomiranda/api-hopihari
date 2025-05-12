@@ -41,12 +41,12 @@ exports.cadastrarUsuario = async (req, res) => {
             phone
           )
             values (?, ?, ?, ?, ?, ?);`,[
-              req.body.first_name, 
-              req.body.last_name,
-              req.body.email, 
-              req.body.password,
-              req.body.birth_date,
-              req.body.phone
+                req.body.first_name, 
+                req.body.last_name,
+                req.body.email, 
+                req.body.password,
+                req.body.birth_date,
+                req.body.phone
             ]);
 
         return res.status(200).send({
