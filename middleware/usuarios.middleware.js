@@ -12,10 +12,21 @@ exports.required = async (req, res, next) => {
             res.locals.idUsuario = decoded.id;
             next();
         } else {
-            return res.status(401).send({ "Mensagem": "Usuário não Autenticado" });
+            return res.status(401).send({ "Mensagem": "Usuário não autenticado" });
         }
 
     } catch (error) {
         return res.status(500).send(error);
     }
 }
+
+ exports.userRequired = async (req, res, next) => {
+    try {
+        if (!res.locals.admin) {
+            return res.status(405).send({"Mensagem": "Usuário não autorizado"});
+        }
+        next();
+    }catch (error) {
+        return res.status(500).send(error);
+    }
+ }
